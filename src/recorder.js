@@ -11,7 +11,8 @@ export class Recorder {
 
     callbacks = {
         getBuffer: [],
-        exportWAV: []
+        exportWAV: [],
+        exportWAV24bit: []
     };
 
     constructor(source, cfg) {
@@ -55,6 +56,9 @@ export class Recorder {
                     case 'exportWAV':
                         exportWAV(e.data.type);
                         break;
+                    case 'exportWAV24bit':
+                        exportWAV24bit(e.data.type);
+                        break;
                     case 'getBuffer':
                         getBuffer();
                         break;
@@ -92,6 +96,23 @@ export class Recorder {
                 let audioBlob = new Blob([dataview], {type: type});
 
                 this.postMessage({command: 'exportWAV', data: audioBlob});
+            }
+
+            function exportWAV24bit(type) {
+                let buffers = [];
+                for (let channel = 0; channel < numChannels; channel++) {
+                    buffers.push(mergeBuffers(recBuffers[channel], recLength));
+                }
+                let interleaved;
+                if (numChannels === 2) {
+                    interleaved = interleave(buffers[0], buffers[1]);
+                } else {
+                    interleaved = buffers[0];
+                }
+                let dataview = encodeWAV(interleaved);
+                let audioBlob = new Blob([dataview], {type: type});
+
+                this.postMessage({command: 'exportWAV24bit', data: audioBlob});
             }
 
             function getBuffer() {
@@ -236,6 +257,19 @@ export class Recorder {
 
         this.worker.postMessage({
             command: 'exportWAV',
+            type: mimeType
+        });
+    }
+
+    exportWAV24bit(cb, mimeType) {
+        mimeType = mimeType || this.config.mimeType;
+        cb = cb || this.config.callback;
+        if (!cb) throw new Error('Callback not set');
+
+        this.callbacks.exportWAV24bit.push(cb);
+
+        this.worker.postMessage({
+            command: 'exportWAV24bit',
             type: mimeType
         });
     }
