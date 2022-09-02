@@ -1,8 +1,9 @@
+
+This fork adds 24 bit export capability
+
 # Recorder.js
 
 ## A plugin for recording/exporting the output of Web Audio API nodes
-
-**Note:** This is my fork which so far only adds 24 bit export, I may continue to add functionality as needed.
 
 My sincerest apologies to the open source community for allowing this project to stagnate. I hope it was useful for some of you as a jumping-off point.
 
